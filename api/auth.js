@@ -21,13 +21,30 @@ export default async function handler(req, res) {
 
   try {
     const key = 'session:' + password.trim().toLowerCase();
-    const session = await redis.get(key);
+    console.log('Looking up key:', key);
 
-    if (!session) {
+    const raw = await redis.get(key);
+    console.log('Raw value from Redis:', JSON.stringify(raw), typeof raw);
+
+    if (raw === null || raw === undefined) {
       return res.status(401).json({ success: false, error: 'Invalid access code. Please check your code or contact brandon@4thdmc.com.' });
     }
 
+    // Handle string or object return
+    let session;
+    if (typeof raw === 'string') {
+      try { session = JSON.parse(raw); } catch(e) { session = null; }
+    } else {
+      session = raw;
+    }
+
+    if (!session || typeof session.limit === 'undefined') {
+      console.error('Could not parse session:', raw);
+      return res.status(500).json({ success: false, error: 'Session data error. Contact brandon@4thdmc.com.' });
+    }
+
     const remaining = session.limit - session.used;
+    console.log('Session valid. Limit:', session.limit, 'Used:', session.used, 'Remaining:', remaining);
 
     return res.status(200).json({
       success: true,
