@@ -328,14 +328,14 @@ async function generate() {
   var jobDetail = document.getElementById('job-detail').value.trim();
   var err = document.getElementById('gen-err');
 
-  if (!bizName) { alert('FAIL: bizName empty'); err.textContent = 'Please enter your business name.'; return; }
-  if (!customerName) { alert('FAIL: customerName empty'); err.textContent = 'Please enter the customer name.'; return; }
-  if (!service) { alert('FAIL: service empty'); err.textContent = 'Please describe the service performed.'; return; }
-  if (!platform) { alert('FAIL: platform empty'); err.textContent = 'Please select a review platform.'; return; }
-  if (platform === 'custom' && !customUrl) { alert('FAIL: customUrl empty'); err.textContent = 'Please paste your custom review URL.'; return; }
+  if (!bizName) { err.textContent = 'Please enter your business name.'; return; }
+  if (!customerName) { err.textContent = 'Please enter the customer name.'; return; }
+  if (!service) { err.textContent = 'Please describe the service performed.'; return; }
+  if (!platform) { err.textContent = 'Please select a review platform.'; return; }
+  if (platform === 'custom' && !customUrl) { err.textContent = 'Please paste your custom review URL.'; return; }
 
   err.textContent = '';
-  if (remaining <= 0) { alert('FAIL: remaining is zero'); showLocked(); return; }
+  if (remaining <= 0) { showLocked(); return; }
 
   document.getElementById('gen-btn').disabled = true;
   document.getElementById('loader').style.display = 'block';
@@ -344,7 +344,6 @@ async function generate() {
   var platformName = platform === 'custom' ? 'their review page' : platform;
   var finalUrl = reviewUrl || (platform === 'custom' ? customUrl : '');
 
-  alert('DEBUG: about to fetch, token=' + sessionToken + ' remaining=' + remaining);
   try {
     var res = await fetch('/api/generate', {
       method: 'POST',
