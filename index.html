@@ -345,6 +345,7 @@ async function generate() {
   var platformName = platform === 'custom' ? 'their review page' : platform;
   var finalUrl = reviewUrl || (platform === 'custom' ? customUrl : '');
 
+  alert('DEBUG: about to fetch, token=' + sessionToken + ' remaining=' + remaining);
   try {
     var res = await fetch('/api/generate', {
       method: 'POST',
