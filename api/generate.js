@@ -1,4 +1,9 @@
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 const ipRequests = new Map();
 const RATE_LIMIT = 30;
@@ -46,20 +51,24 @@ export default async function handler(req, res) {
 
   try {
     const key = 'session:' + password.trim().toLowerCase();
-    const session = await kv.get(key);
+    const session = await redis.get(key);
 
     if (!session) {
       return res.status(401).json({ success: false, error: 'Invalid access code.' });
     }
 
     if (session.used >= session.limit) {
-      return res.status(403).json({ success: false, error: 'Session limit reached. Contact brandon@4thdmc.com for a new access code.', locked: true });
+      return res.status(403).json({
+        success: false,
+        error: 'Session limit reached. Contact brandon@4thdmc.com for a new access code.',
+        locked: true
+      });
     }
 
-    const urlLine = reviewUrl ? `\n\nLeave your review here: ${reviewUrl}` : '';
-    const detailLine = jobDetail ? `\n\nOne specific detail about this job: ${jobDetail}` : '';
+    const urlLine = reviewUrl ? `\n\nReview link: ${reviewUrl}` : '';
+    const detailLine = jobDetail ? `\n\nSpecific job detail: ${jobDetail}` : '';
 
-    const prompt = `You are writing personalized review request messages on behalf of a small business owner. Generate two versions of a review request — one for text message and one for email. Both must feel genuinely personal, warm, and human. Never sound like a template or automated message.
+    const prompt = `You are writing personalized review request messages on behalf of a small business owner. Generate two versions — one for text message and one for email. Both must feel genuinely personal, warm, and human. Never sound like a template or automated message.
 
 Business name: ${bizName}
 Customer first name: ${customerName}
@@ -70,9 +79,9 @@ RULES:
 - Text version: 2-4 sentences maximum. Casual, conversational, sounds like a real person texting. Include the review URL if provided.
 - Email version: 3-6 sentences. Slightly warmer and more complete. Still personal not corporate. Include the review URL if provided.
 - Never use phrases like "We hope you enjoyed" or "Your feedback is important to us" — these sound automated.
-- Reference the specific service performed and the customer by name.
-- If a specific job detail was provided weave it in naturally.
-- If no review URL is provided leave a placeholder: [YOUR REVIEW LINK]
+- Reference the specific service and the customer by name.
+- If a job detail was provided weave it in naturally.
+- If no review URL is provided use this placeholder: [YOUR REVIEW LINK]
 - Do not include subject lines, greetings like "Dear", or sign-offs — just the message body.
 
 Return ONLY valid JSON, no markdown, no extra text:
@@ -101,8 +110,8 @@ Return ONLY valid JSON, no markdown, no extra text:
 
     const output = JSON.parse(raw);
 
-    // Increment counter
-    await kv.set(key, {
+    // Increment counter in Redis
+    await redis.set(key, {
       ...session,
       used: session.used + 1
     });
