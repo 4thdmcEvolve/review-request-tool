@@ -319,7 +319,6 @@ function getPlatformNote(platform) {
 }
 
 async function generate() {
-  alert('DEBUG: generate fired');
   var bizName = document.getElementById('biz-name').value.trim();
   var customerName = document.getElementById('customer-name').value.trim();
   var service = document.getElementById('service').value.trim();
@@ -329,14 +328,14 @@ async function generate() {
   var jobDetail = document.getElementById('job-detail').value.trim();
   var err = document.getElementById('gen-err');
 
-  if (!bizName) { err.textContent = 'Please enter your business name.'; return; }
-  if (!customerName) { err.textContent = 'Please enter the customer name.'; return; }
-  if (!service) { err.textContent = 'Please describe the service performed.'; return; }
-  if (!platform) { err.textContent = 'Please select a review platform.'; return; }
-  if (platform === 'custom' && !customUrl) { err.textContent = 'Please paste your custom review URL.'; return; }
+  if (!bizName) { alert('FAIL: bizName empty'); err.textContent = 'Please enter your business name.'; return; }
+  if (!customerName) { alert('FAIL: customerName empty'); err.textContent = 'Please enter the customer name.'; return; }
+  if (!service) { alert('FAIL: service empty'); err.textContent = 'Please describe the service performed.'; return; }
+  if (!platform) { alert('FAIL: platform empty'); err.textContent = 'Please select a review platform.'; return; }
+  if (platform === 'custom' && !customUrl) { alert('FAIL: customUrl empty'); err.textContent = 'Please paste your custom review URL.'; return; }
 
   err.textContent = '';
-  if (remaining <= 0) { showLocked(); return; }
+  if (remaining <= 0) { alert('FAIL: remaining is zero'); showLocked(); return; }
 
   document.getElementById('gen-btn').disabled = true;
   document.getElementById('loader').style.display = 'block';
