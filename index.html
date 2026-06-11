@@ -385,7 +385,8 @@ async function generate() {
     }
   } catch(e) {
     document.getElementById('loader').style.display = 'none';
-    err.textContent = 'Connection error. Please try again.';
+    err.textContent = 'Error: ' + e.message;
+    console.error('Generate catch error:', e);
     document.getElementById('gen-btn').disabled = false;
   }
 }
