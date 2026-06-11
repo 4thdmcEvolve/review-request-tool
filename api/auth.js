@@ -14,17 +14,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, error: 'No access code provided.' });
   }
 
-  // Log which env vars are present
-  console.log('ENV CHECK - KV_REST_API_URL:', !!process.env.KV_REST_API_URL);
-  console.log('ENV CHECK - KV_REST_API_TOKEN:', !!process.env.KV_REST_API_TOKEN);
-  console.log('ENV CHECK - UPSTASH_REDIS_REST_URL:', !!process.env.UPSTASH_REDIS_REST_URL);
-  console.log('ENV CHECK - UPSTASH_REDIS_REST_TOKEN:', !!process.env.UPSTASH_REDIS_REST_TOKEN);
-
   const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!redisUrl || !redisToken) {
-    console.error('Missing Redis credentials');
     return res.status(500).json({ success: false, error: 'Server configuration error. Contact brandon@4thdmc.com.' });
   }
 
@@ -32,10 +25,7 @@ export default async function handler(req, res) {
 
   try {
     const key = 'session:' + password.trim().toLowerCase();
-    console.log('Looking up key:', key);
-
     const raw = await redis.get(key);
-    console.log('Raw value from Redis:', JSON.stringify(raw), typeof raw);
 
     if (raw === null || raw === undefined) {
       return res.status(401).json({ success: false, error: 'Invalid access code. Please check your code or contact brandon@4thdmc.com.' });
@@ -49,12 +39,10 @@ export default async function handler(req, res) {
     }
 
     if (!session || typeof session.limit === 'undefined') {
-      console.error('Could not parse session:', raw);
       return res.status(500).json({ success: false, error: 'Session data error. Contact brandon@4thdmc.com.' });
     }
 
     const remaining = session.limit - session.used;
-    console.log('Session valid. Limit:', session.limit, 'Used:', session.used, 'Remaining:', remaining);
 
     return res.status(200).json({
       success: true,
