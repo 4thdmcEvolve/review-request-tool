@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review Request Generator | 4THDMC | EVOLVE LLC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f4f3f0;color:#1a1a1a;min-height:100vh;padding:2rem 1rem}
+.container{max-width:680px;margin:0 auto}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:2rem}
+.brand{font-size:11px;font-weight:600;letter-spacing:.1em;color:#C9A84C;margin-bottom:8px}
+.header h1{font-size:28px;font-weight:700;color:#1B3A6B;margin-bottom:6px}
+.header p{font-size:14px;color:#666;line-height:1.6;max-width:480px;margin:0 auto}
+
+/* LOGIN GATE */
+.gate{background:#fff;border-radius:10px;border:1px solid #e8e8e4;padding:2rem;max-width:400px;margin:0 auto}
+.gate-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:#C9A84C;margin-bottom:8px}
+.gate-title{font-size:18px;font-weight:600;color:#1B3A6B;margin-bottom:6px}
+.gate-sub{font-size:13px;color:#888;margin-bottom:1.5rem;line-height:1.5}
+.gate-field{margin-bottom:1rem}
+.gate-field label{display:block;font-size:12px;font-weight:500;color:#555;margin-bottom:5px}
+.gate-field input{width:100%;padding:10px 14px;border:1.5px solid #e8e8e4;border-radius:7px;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+.gate-field input:focus{border-color:#1B3A6B}
+.gate-err{font-size:13px;color:#dc2626;margin-top:8px;min-height:18px}
+
+/* COUNTER BAR */
+.counter-bar{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:10px;border:1px solid #e8e8e4;padding:12px 20px;margin-bottom:1.5rem}
+.counter-left{font-size:13px;color:#555}
+.counter-left span{font-weight:700;color:#1B3A6B}
+.counter-track{flex:1;height:6px;background:#e8e8e4;border-radius:3px;margin:0 16px;overflow:hidden}
+.counter-fill{height:100%;background:#1B3A6B;border-radius:3px;transition:width .3s}
+.counter-fill.warning{background:#C9A84C}
+.counter-fill.critical{background:#dc2626}
+.counter-right{font-size:12px;color:#999}
+
+/* MAIN CARD */
+.card{background:#fff;border-radius:10px;border:1px solid #e8e8e4;padding:1.75rem}
+.card-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:#C9A84C;margin-bottom:8px}
+.card h2{font-size:17px;font-weight:600;color:#1B3A6B;margin-bottom:1.5rem}
+
+.field{margin-bottom:1.25rem}
+.field label{display:block;font-size:13px;font-weight:500;color:#555;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1.5px solid #e8e8e4;border-radius:7px;font-size:14px;font-family:'Inter',sans-serif;color:#1a1a1a;outline:none;transition:border-color .15s;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#1B3A6B}
+.field input::placeholder,.field textarea::placeholder{color:#bbb}
+.field textarea{height:80px;resize:vertical}
+.field .optional{font-size:11px;color:#aaa;margin-left:4px;font-weight:400}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.field-row{grid-template-columns:1fr}}
+
+.platform-custom{margin-top:8px;display:none}
+.platform-custom.visible{display:block}
+
+/* GENERATE BTN */
+.gen-wrap{margin-top:1.5rem}
+.gen-btn{width:100%;background:#1B3A6B;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s}
+.gen-btn:hover{background:#152e56}
+.gen-btn:disabled{background:#ccc;cursor:not-allowed}
+.gen-err{font-size:13px;color:#dc2626;margin-top:8px;min-height:18px}
+
+/* LOADER */
+.loader{text-align:center;padding:2rem;display:none}
+.spinner{width:28px;height:28px;border:3px solid #e8e8e4;border-top-color:#1B3A6B;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-txt{font-size:14px;color:#888}
+
+/* RESULTS */
+.results{display:none;margin-top:1.5rem}
+.result-card{background:#f8f7f4;border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:1rem;border:1px solid #e8e8e4}
+.result-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:#1B3A6B;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.result-text{font-size:14px;color:#2a2a2a;line-height:1.7;white-space:pre-wrap;margin-bottom:12px}
+.copy-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:6px;border:1.5px solid #1B3A6B;background:transparent;color:#1B3A6B;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.copy-btn:hover{background:#1B3A6B;color:#fff}
+.copy-btn.copied{background:#166534;border-color:#166534;color:#fff}
+
+.platform-note{background:#e8edf5;border-radius:7px;padding:10px 14px;margin-bottom:1rem;font-size:12px;color:#1B3A6B;line-height:1.6}
+.platform-note strong{display:block;margin-bottom:2px}
+
+.new-btn{width:100%;background:transparent;border:1.5px solid #1B3A6B;color:#1B3A6B;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;margin-top:8px}
+.new-btn:hover{background:#1B3A6B;color:#fff}
+
+/* LOCKED STATE */
+.locked{background:#fff;border-radius:10px;border:1.5px solid #dc2626;padding:2rem;text-align:center;display:none}
+.locked-icon{font-size:32px;margin-bottom:12px}
+.locked-title{font-size:18px;font-weight:700;color:#dc2626;margin-bottom:8px}
+.locked-msg{font-size:14px;color:#666;line-height:1.6;margin-bottom:16px}
+.locked-contact{font-size:13px;color:#1B3A6B;font-weight:600}
+.locked-contact a{color:#1B3A6B;text-decoration:none}
+
+/* FOOTER */
+.footer{text-align:center;margin-top:2rem;font-size:11px;color:#bbb}
+
+@media print{body{background:#fff}.counter-bar,.gen-wrap,.new-btn{display:none!important}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="brand">4THDMC | EVOLVE LLC</div>
+    <h1>Review Request Generator</h1>
+    <p>Generate a personalized review request message for any platform in seconds.</p>
+  </div>
+
+  <!-- LOGIN GATE -->
+  <div id="gate-wrap">
+    <div class="gate">
+      <div class="gate-label">ACCESS REQUIRED</div>
+      <div class="gate-title">Enter your access code</div>
+      <div class="gate-sub">Your access code was provided with your 4THDMC engagement. Contact brandon@4thdmc.com if you need assistance.</div>
+      <div class="gate-field">
+        <label>Access code</label>
+        <input type="password" id="password-input" placeholder="Enter your code" onkeydown="if(event.key==='Enter')submitPassword()">
+      </div>
+      <button class="gen-btn" onclick="submitPassword()">Access Tool</button>
+      <div class="gate-err" id="gate-err"></div>
+    </div>
+  </div>
+
+  <!-- MAIN TOOL -->
+  <div id="tool-wrap" style="display:none">
+
+    <!-- COUNTER -->
+    <div class="counter-bar">
+      <div class="counter-left">Generates remaining: <span id="counter-num">--</span></div>
+      <div class="counter-track"><div class="counter-fill" id="counter-fill" style="width:100%"></div></div>
+      <div class="counter-right" id="counter-right">-- of -- used</div>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="card">
+      <div class="card-label">GENERATE A REVIEW REQUEST</div>
+      <h2>Tell us about the job</h2>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Your business name</label>
+          <input type="text" id="biz-name" placeholder="e.g. Smith Plumbing">
+        </div>
+        <div class="field">
+          <label>Customer first name</label>
+          <input type="text" id="customer-name" placeholder="e.g. Sarah">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Service or job performed</label>
+        <input type="text" id="service" placeholder="e.g. water heater replacement, deep cleaning, tax preparation">
+      </div>
+
+      <div class="field">
+        <label>Review platform</label>
+        <select id="platform" onchange="handlePlatform()">
+          <option value="">Select a platform</option>
+          <option value="Google">Google</option>
+          <option value="Yelp">Yelp</option>
+          <option value="Facebook">Facebook</option>
+          <option value="Thumbtack">Thumbtack</option>
+          <option value="Houzz">Houzz</option>
+          <option value="TripAdvisor">TripAdvisor</option>
+          <option value="Healthgrades">Healthgrades</option>
+          <option value="Angi">Angi</option>
+          <option value="HomeAdvisor">HomeAdvisor</option>
+          <option value="custom">Other / Custom URL</option>
+        </select>
+        <div class="platform-custom" id="custom-url-wrap">
+          <input type="text" id="custom-url" placeholder="Paste your review link here">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Review link URL <span class="optional">(optional but recommended)</span></label>
+        <input type="text" id="review-url" placeholder="e.g. https://g.page/r/your-business/review">
+      </div>
+
+      <div class="field">
+        <label>One specific detail about this job <span class="optional">(optional)</span></label>
+        <textarea id="job-detail" placeholder="e.g. finished two hours early, solved a problem three other companies couldn't fix, went out of the way to explain everything clearly..."></textarea>
+      </div>
+
+      <div class="gen-wrap">
+        <button class="gen-btn" id="gen-btn" onclick="generate()">Generate Review Request</button>
+        <div class="gen-err" id="gen-err"></div>
+      </div>
+    </div>
+
+    <!-- LOADER -->
+    <div class="loader" id="loader">
+      <div class="spinner"></div>
+      <div class="loader-txt">Writing your review request...</div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results" id="results">
+      <div class="platform-note" id="platform-note" style="display:none">
+        <strong id="platform-note-title"></strong>
+        <span id="platform-note-text"></span>
+      </div>
+
+      <div class="result-card">
+        <div class="result-label">
+          <span>TEXT MESSAGE VERSION</span>
+          <button class="copy-btn" id="copy-text-btn" onclick="copyText('text-output','copy-text-btn')">Copy</button>
+        </div>
+        <div class="result-text" id="text-output"></div>
+      </div>
+
+      <div class="result-card">
+        <div class="result-label">
+          <span>EMAIL VERSION</span>
+          <button class="copy-btn" id="copy-email-btn" onclick="copyText('email-output','copy-email-btn')">Copy</button>
+        </div>
+        <div class="result-text" id="email-output"></div>
+      </div>
+
+      <button class="new-btn" onclick="newRequest()">Generate Another Request</button>
+    </div>
+
+    <!-- LOCKED -->
+    <div class="locked" id="locked">
+      <div class="locked-icon">🔒</div>
+      <div class="locked-title">Session Complete</div>
+      <div class="locked-msg">You have used all the generates included in your current session. To continue using the Review Request Generator, contact Brandon for a new access code.</div>
+      <div class="locked-contact"><a href="mailto:brandon@4thdmc.com">brandon@4thdmc.com</a></div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>© 2026 4THDMC | EVOLVE LLC. All Rights Reserved. &nbsp;|&nbsp; 4thdmc.com</p>
+  </div>
+
+</div>
+
+<script>
+var sessionToken = '';
+var remaining = 0;
+var limit = 50;
+
+async function submitPassword() {
+  var pwd = document.getElementById('password-input').value.trim();
+  var err = document.getElementById('gate-err');
+  if (!pwd) { err.textContent = 'Please enter your access code.'; return; }
+
+  err.textContent = '';
+  document.querySelector('#gate-wrap .gen-btn').textContent = 'Checking...';
+  document.querySelector('#gate-wrap .gen-btn').disabled = true;
+
+  try {
+    var res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    var data = await res.json();
+
+    if (data.success) {
+      sessionToken = pwd;
+      remaining = data.remaining;
+      limit = data.limit;
+      document.getElementById('gate-wrap').style.display = 'none';
+      document.getElementById('tool-wrap').style.display = 'block';
+      updateCounter();
+      if (remaining <= 0) showLocked();
+    } else {
+      err.textContent = data.error || 'Invalid access code. Please try again.';
+      document.querySelector('#gate-wrap .gen-btn').textContent = 'Access Tool';
+      document.querySelector('#gate-wrap .gen-btn').disabled = false;
+    }
+  } catch(e) {
+    err.textContent = 'Connection error. Please try again.';
+    document.querySelector('#gate-wrap .gen-btn').textContent = 'Access Tool';
+    document.querySelector('#gate-wrap .gen-btn').disabled = false;
+  }
+}
+
+function updateCounter() {
+  var used = limit - remaining;
+  var pct = (remaining / limit) * 100;
+  document.getElementById('counter-num').textContent = remaining;
+  document.getElementById('counter-right').textContent = used + ' of ' + limit + ' used';
+  var fill = document.getElementById('counter-fill');
+  fill.style.width = pct + '%';
+  fill.className = 'counter-fill' + (pct <= 20 ? ' critical' : pct <= 40 ? ' warning' : '');
+  if (remaining <= 0) showLocked();
+}
+
+function showLocked() {
+  document.getElementById('locked').style.display = 'block';
+  document.getElementById('gen-btn').disabled = true;
+}
+
+function handlePlatform() {
+  var val = document.getElementById('platform').value;
+  var customWrap = document.getElementById('custom-url-wrap');
+  customWrap.className = 'platform-custom' + (val === 'custom' ? ' visible' : '');
+}
+
+function getPlatformName() {
+  var val = document.getElementById('platform').value;
+  if (val === 'custom') return 'their review page';
+  return val || 'their review page';
+}
+
+function getPlatformNote(platform) {
+  var notes = {
+    'Google': { title: 'Finding your Google review link:', text: 'Search your business name on Google → click Reviews → click "Get more reviews" → copy the link.' },
+    'Yelp': { title: 'Finding your Yelp review link:', text: 'Go to your Yelp business page → copy the URL from your browser.' },
+    'Facebook': { title: 'Finding your Facebook review link:', text: 'Go to your Facebook business page → click Reviews tab → copy the URL.' },
+    'Thumbtack': { title: 'Finding your Thumbtack review link:', text: 'Log into Thumbtack → go to your profile → copy the profile URL.' },
+  };
+  return notes[platform] || null;
+}
+
+async function generate() {
+  var bizName = document.getElementById('biz-name').value.trim();
+  var customerName = document.getElementById('customer-name').value.trim();
+  var service = document.getElementById('service').value.trim();
+  var platform = document.getElementById('platform').value;
+  var customUrl = document.getElementById('custom-url').value.trim();
+  var reviewUrl = document.getElementById('review-url').value.trim();
+  var jobDetail = document.getElementById('job-detail').value.trim();
+  var err = document.getElementById('gen-err');
+
+  if (!bizName) { err.textContent = 'Please enter your business name.'; return; }
+  if (!customerName) { err.textContent = 'Please enter the customer name.'; return; }
+  if (!service) { err.textContent = 'Please describe the service performed.'; return; }
+  if (!platform) { err.textContent = 'Please select a review platform.'; return; }
+  if (platform === 'custom' && !customUrl) { err.textContent = 'Please paste your custom review URL.'; return; }
+
+  err.textContent = '';
+  if (remaining <= 0) { showLocked(); return; }
+
+  document.getElementById('gen-btn').disabled = true;
+  document.getElementById('loader').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+
+  var platformName = platform === 'custom' ? 'their review page' : platform;
+  var finalUrl = reviewUrl || (platform === 'custom' ? customUrl : '');
+
+  try {
+    var res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        password: sessionToken,
+        bizName, customerName, service,
+        platform: platformName,
+        reviewUrl: finalUrl,
+        jobDetail
+      })
+    });
+    var data = await res.json();
+
+    document.getElementById('loader').style.display = 'none';
+
+    if (data.success) {
+      remaining = data.remaining;
+      updateCounter();
+      document.getElementById('text-output').textContent = data.textVersion;
+      document.getElementById('email-output').textContent = data.emailVersion;
+
+      var note = getPlatformNote(platform);
+      if (note && !finalUrl) {
+        document.getElementById('platform-note-title').textContent = note.title;
+        document.getElementById('platform-note-text').textContent = note.text;
+        document.getElementById('platform-note').style.display = 'block';
+      } else {
+        document.getElementById('platform-note').style.display = 'none';
+      }
+
+      document.getElementById('results').style.display = 'block';
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('gen-btn').disabled = remaining <= 0;
+    } else {
+      err.textContent = data.error || 'Something went wrong. Please try again.';
+      document.getElementById('gen-btn').disabled = false;
+      if (data.locked) showLocked();
+    }
+  } catch(e) {
+    document.getElementById('loader').style.display = 'none';
+    err.textContent = 'Connection error. Please try again.';
+    document.getElementById('gen-btn').disabled = false;
+  }
+}
+
+function copyText(sourceId, btnId) {
+  var text = document.getElementById(sourceId).textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById(btnId);
+    btn.textContent = 'Copied!';
+    btn.className = 'copy-btn copied';
+    setTimeout(function() {
+      btn.textContent = 'Copy';
+      btn.className = 'copy-btn';
+    }, 2000);
+  }).catch(function() {
+    alert('Copy failed — please select and copy the text manually.');
+  });
+}
+
+function newRequest() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('platform-note').style.display = 'none';
+  document.getElementById('copy-text-btn').textContent = 'Copy';
+  document.getElementById('copy-text-btn').className = 'copy-btn';
+  document.getElementById('copy-email-btn').textContent = 'Copy';
+  document.getElementById('copy-email-btn').className = 'copy-btn';
+  document.getElementById('customer-name').value = '';
+  document.getElementById('service').value = '';
+  document.getElementById('job-detail').value = '';
+  document.getElementById('review-url').value = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (remaining > 0) document.getElementById('gen-btn').disabled = false;
+}
+</script>
+</body>
+</html>
